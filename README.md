@@ -13,9 +13,11 @@ $ git clone https://github.com/MarklPlz/Round-Trip-Measurements.git
 # Go into the repository
 $ cd Round-Trip-Measurements
 
-# Compile the source file
-$ gcc -Wall -Wextra -pedantic -O3 -std=c11 source_file.c -o executable_name
+# Compile the source files
+$ gcc -Wall -Wextra -pedantic -O3 -std=c18 src/echo_node.c -o echo_node
+$ gcc -Wall -Wextra -pedantic -O3 -std=c18 src/measure_node.c -o measure_node -D_POSIX_C_SOURCE=199309L
 
 # Run the program
-$ ./executable_name
+$ ./echo_node
+$ ./measure_node
 ```
