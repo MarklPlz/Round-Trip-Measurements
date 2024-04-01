@@ -4,8 +4,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#define PORT 12345            // Port number to bind the socket
-#define BUFFER_SIZE 1024      // Size of the buffer for sending/receiving data
+#define PORT 12345              // Port number to bind the socket
+#define BUFFER_SIZE 1024        // Size of the buffer for sending/receiving data
 #define DEST_IP "192.168.0.123" // IP address of the destination IP
 
 int main(void) {
@@ -17,11 +17,11 @@ int main(void) {
 
   // Create a UDP socket
   if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-    perror("socket");
+    perror("socket creation failed");
     exit(EXIT_FAILURE);
   }
 
-  // Initialize src address structure
+  // Initialize address structures
   memset(&src_addr, 0, sizeof(src_addr));
   memset(&dest_addr, 0, sizeof(dest_addr));
   src_addr.sin_family = AF_INET;
@@ -36,28 +36,26 @@ int main(void) {
   dest_addr.sin_addr.s_addr = inet_addr(DEST_IP);
   dest_addr.sin_port = htons(PORT);
 
-  // Bind the socket to the specified port
-  if (bind(sockfd, (struct sockaddr *)&src_addr, src_addr_len) ==
-      -1) {
-    perror("bind");
+  // Bind the socket
+  if (bind(sockfd, (struct sockaddr *)&src_addr, src_addr_len) == -1) {
+    perror("bind failed");
     exit(EXIT_FAILURE);
   }
 
-  printf("UDP src is running and waiting for messages...\n");
+  printf("Echo node is running and waiting for messages...\n");
 
   while (1) {
-    // Receive message from dest
+    // Receive a message from the measure node
     ssize_t bytes_received =
-        recvfrom(sockfd, buffer, BUFFER_SIZE, 0,
-                 (struct sockaddr *)&dest_addr, &dest_addr_len);
+        recvfrom(sockfd, buffer, BUFFER_SIZE, 0, (struct sockaddr *)&dest_addr,
+                 &dest_addr_len);
     if (bytes_received == -1) {
       perror("recvfrom");
       exit(EXIT_FAILURE);
     }
-    printf("Message received from server.\n");
+    printf("Message received from the measure node.\n");
 
-
-    // Send a message to the dest
+    // Send a message to the measure node
     ssize_t bytes_sent =
         sendto(sockfd, buffer, BUFFER_SIZE, 0,
                (const struct sockaddr *)&dest_addr, dest_addr_len);
@@ -65,7 +63,7 @@ int main(void) {
       perror("sendto");
       exit(EXIT_FAILURE);
     }
-    printf("Message sent to the server.\n");
+    printf("Message sent to the measure node.\n");
   }
 
   // Close the socket
