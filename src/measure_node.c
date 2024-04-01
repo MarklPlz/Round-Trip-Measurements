@@ -42,9 +42,9 @@ int main(void) {
     perror("inet_pton");
     exit(EXIT_FAILURE);
   }
-    dest_addr.sin_family = AF_INET;
-    dest_addr.sin_addr.s_addr = inet_addr(DEST_IP);
-    dest_addr.sin_port = htons(PORT);
+  dest_addr.sin_family = AF_INET;
+  dest_addr.sin_addr.s_addr = inet_addr(DEST_IP);
+  dest_addr.sin_port = htons(PORT);
 
   // Bind the socket to the specified port
   if (bind(sockfd, (struct sockaddr *)&src_addr, src_addr_len) ==

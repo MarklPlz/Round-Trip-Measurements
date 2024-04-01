@@ -6,12 +6,12 @@
 
 #define PORT 12345            // Port number to bind the socket
 #define BUFFER_SIZE 1024      // Size of the buffer for sending/receiving data
-#define SERVER_IP "192.168.0.123" // IP address of the destination server
+#define DEST_IP "192.168.0.123" // IP address of the destination IP
 
 int main(void) {
   int sockfd;
-  struct sockaddr_in server_addr, client_addr;
-  socklen_t client_addr_len = sizeof(client_addr);
+  struct sockaddr_in src_addr, dest_addr;
+  socklen_t dest_addr_len = sizeof(dest_addr);
   char buffer[BUFFER_SIZE];
 
   // Create a UDP socket
@@ -20,40 +20,41 @@ int main(void) {
     exit(EXIT_FAILURE);
   }
 
-  // Initialize server address structure
-  memset(&server_addr, 0, sizeof(server_addr));
-  memset(&client_addr, 0, sizeof(client_addr));
-  server_addr.sin_family = AF_INET;
-  server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-  server_addr.sin_port = htons(PORT);
-  if (inet_pton(AF_INET, SERVER_IP, &server_addr.sin_addr) <= 0) {
+  // Initialize src address structure
+  memset(&src_addr, 0, sizeof(src_addr));
+  memset(&dest_addr, 0, sizeof(dest_addr));
+  src_addr.sin_family = AF_INET;
+  src_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  src_addr.sin_port = htons(PORT);
+  
+  if (inet_pton(AF_INET, DEST_IP, &src_addr.sin_addr) <= 0) {
     perror("inet_pton");
     exit(EXIT_FAILURE);
   }
 
   // Bind the socket to the specified port
-  if (bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) ==
+  if (bind(sockfd, (struct sockaddr *)&src_addr, sizeof(src_addr)) ==
       -1) {
     perror("bind");
     exit(EXIT_FAILURE);
   }
 
-  printf("UDP server is running and waiting for messages...\n");
+  printf("UDP src is running and waiting for messages...\n");
 
   while (1) {
-    // Receive message from client
+    // Receive message from dest
     ssize_t bytes_received =
         recvfrom(sockfd, buffer, BUFFER_SIZE, 0,
-                 (struct sockaddr *)&client_addr, &client_addr_len);
+                 (struct sockaddr *)&dest_addr, &dest_addr_len);
     if (bytes_received == -1) {
       perror("recvfrom");
       exit(EXIT_FAILURE);
     }
 
-    // Send a message to the client
+    // Send a message to the dest
     ssize_t bytes_sent =
         sendto(sockfd, buffer, BUFFER_SIZE, 0,
-               (const struct sockaddr *)&client_addr, client_addr_len);
+               (const struct sockaddr *)&dest_addr, dest_addr_len);
     if (bytes_sent == -1) {
       perror("sendto");
       exit(EXIT_FAILURE);
