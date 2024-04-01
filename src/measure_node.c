@@ -6,21 +6,24 @@
 #include <unistd.h>
 
 #define PORT 12345               // Port number to bind the socket
-#define SERVER_IP "192.168.0.28" // IP address of the destination server
-#define SERVER_PORT 12345        // Port number of the destination server
+#define DEST_IP "192.168.0.95" // IP address of the destination server
+#define DEST_PORT 12345        // Port number of the destination server
 #define INTERVAL 1               // Send interval
+#define BUFFER_SIZE 1024        // Size of the buffer for sending/receiving data
 
-int main() {
+
+int main(void) {
   int i = 0;
   struct timespec start, end;
-  double elapsed = 0;
+  double elapsed;
 
   int sockfd;
-  struct sockaddr_in server_addr; //, client_addr;
-  // socklen_t client_addr_len = sizeof(client_addr);
-  socklen_t server_addr_len = sizeof(server_addr);
-  uint32_t buffer = 0;
-  int BUFFER_SIZE = sizeof(buffer);
+  struct sockaddr_in src_addr, dest_addr;
+  socklen_t src_addr_len = sizeof(src_addr);
+  socklen_t dest_addr_len = sizeof(dest_addr);
+  //uint32_t buffer = 0;
+  char buffer[] = "Hello, UDP server!";
+  //int BUFFER_SIZE = sizeof(buffer);
 
   // Create a UDP socket
   if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
@@ -29,17 +32,18 @@ int main() {
   }
 
   // Initialize server address structure
-  memset(&server_addr, 0, sizeof(server_addr));
-  server_addr.sin_family = AF_INET;
-  server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-  server_addr.sin_port = htons(PORT);
-  if (inet_pton(AF_INET, SERVER_IP, &server_addr.sin_addr) <= 0) {
+  memset(&src_addr, 0, sizeof(src_addr));
+  memset(&dest_addr, 0, sizeof(dest_addr));
+  src_addr.sin_family = AF_INET;
+  src_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  src_addr.sin_port = htons(PORT);
+  if (inet_pton(AF_INET, DEST_IP, &dest_addr.sin_addr) <= 0) {
     perror("inet_pton");
     exit(EXIT_FAILURE);
   }
 
   // Bind the socket to the specified port
-  if (bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) ==
+  if (bind(sockfd, (struct sockaddr *)&src_addr, src_addr_len) ==
       -1) {
     perror("bind");
     exit(EXIT_FAILURE);
@@ -51,9 +55,7 @@ int main() {
     clock_gettime(CLOCK_MONOTONIC, &start);
 
     // Send a message to the server
-    ssize_t bytes_sent =
-        sendto(sockfd, &buffer, BUFFER_SIZE, 0,
-               (const struct sockaddr *)&server_addr, server_addr_len);
+    ssize_t bytes_sent = sendto(sockfd, buffer, strlen(buffer), 0, (const struct sockaddr *)&dest_addr, sizeof(dest_addr));
     if (bytes_sent == -1) {
       perror("sendto");
       exit(EXIT_FAILURE);
@@ -62,15 +64,13 @@ int main() {
 
     // Receive message from server
     ssize_t bytes_received =
-        recvfrom(sockfd, &buffer, BUFFER_SIZE, 0,
-                 (struct sockaddr *)&server_addr, &server_addr_len);
+        recvfrom(sockfd, buffer, BUFFER_SIZE, 0,
+                 (struct sockaddr *)&dest_addr, &dest_addr_len);
     if (bytes_received == -1) {
       perror("recvfrom");
       exit(EXIT_FAILURE);
     }
     printf("Message received from server.\n");
-
-    clock_gettime(CLOCK_MONOTONIC, &end);
 
     do {
       clock_gettime(CLOCK_MONOTONIC, &end);

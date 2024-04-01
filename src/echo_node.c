@@ -6,9 +6,9 @@
 
 #define PORT 12345            // Port number to bind the socket
 #define BUFFER_SIZE 1024      // Size of the buffer for sending/receiving data
-#define SERVER_IP "127.0.0.1" // IP address of the destination server
+#define SERVER_IP "192.168.0.123" // IP address of the destination server
 
-int main() {
+int main(void) {
   int sockfd;
   struct sockaddr_in server_addr, client_addr;
   socklen_t client_addr_len = sizeof(client_addr);
