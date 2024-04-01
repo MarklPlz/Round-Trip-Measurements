@@ -11,6 +11,7 @@
 int main(void) {
   int sockfd;
   struct sockaddr_in src_addr, dest_addr;
+  socklen_t src_addr_len = sizeof(src_addr);
   socklen_t dest_addr_len = sizeof(dest_addr);
   char buffer[BUFFER_SIZE];
 
@@ -26,14 +27,17 @@ int main(void) {
   src_addr.sin_family = AF_INET;
   src_addr.sin_addr.s_addr = htonl(INADDR_ANY);
   src_addr.sin_port = htons(PORT);
-  
-  if (inet_pton(AF_INET, DEST_IP, &src_addr.sin_addr) <= 0) {
+
+  if (inet_pton(AF_INET, DEST_IP, &dest_addr.sin_addr) <= 0) {
     perror("inet_pton");
     exit(EXIT_FAILURE);
   }
+  dest_addr.sin_family = AF_INET;
+  dest_addr.sin_addr.s_addr = inet_addr(DEST_IP);
+  dest_addr.sin_port = htons(PORT);
 
   // Bind the socket to the specified port
-  if (bind(sockfd, (struct sockaddr *)&src_addr, sizeof(src_addr)) ==
+  if (bind(sockfd, (struct sockaddr *)&src_addr, src_addr_len) ==
       -1) {
     perror("bind");
     exit(EXIT_FAILURE);
