@@ -1,15 +1,13 @@
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 #include <unistd.h>
 
-#define PORT 12345             // Port number to bind the socket
-#define DEST_IP "192.168.0.95" // IP address of the destination server
-#define DEST_PORT 12345        // Port number of the destination server
-#define INTERVAL 1             // Send interval
-#define BUFFER_SIZE 1024       // Size of the buffer for sending/receiving data
+#define PORT 12345          // Port number to bind the socket
+#define DEST_IP "127.0.0.1" // IP address of the echo node server
+#define INTERVAL 1          // Send interval
+#define BUFFER_SIZE 1024    // Size of the buffer for sending/receiving data
 
 int main(void) {
   int i = 0;
@@ -17,61 +15,39 @@ int main(void) {
   double elapsed;
 
   int sockfd;
-  struct sockaddr_in src_addr, dest_addr;
-  socklen_t src_addr_len = sizeof(src_addr);
-  socklen_t dest_addr_len = sizeof(dest_addr);
-  // uint32_t buffer = 0;
+  struct sockaddr_in servaddr;
+  socklen_t servaddr_len = sizeof(servaddr);
   char buffer[] = "Hello, UDP server!";
-  // int BUFFER_SIZE = sizeof(buffer);
 
-  // Create a UDP socket
+  // Create a UDP socket, SOCK_DGRAM for UDP
   if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
     perror("socket creation failed");
     exit(EXIT_FAILURE);
   }
 
-  // Initialize server address structure
-  memset(&src_addr, 0, sizeof(src_addr));
-  memset(&dest_addr, 0, sizeof(dest_addr));
-  src_addr.sin_family = AF_INET;
-  src_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-  src_addr.sin_port = htons(PORT);
-
-  if (inet_pton(AF_INET, DEST_IP, &dest_addr.sin_addr) <= 0) {
-    perror("inet_pton");
-    exit(EXIT_FAILURE);
-  }
-  dest_addr.sin_family = AF_INET;
-  dest_addr.sin_addr.s_addr = inet_addr(DEST_IP);
-  dest_addr.sin_port = htons(PORT);
-
-  // Bind the socket
-  if (bind(sockfd, (struct sockaddr *)&src_addr, src_addr_len) == -1) {
-    perror("bind failed");
-    exit(EXIT_FAILURE);
-  }
-
-  printf("Measure node is running and waiting for messages...\n");
+  // Filling server information
+  servaddr.sin_family = AF_INET;
+  servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+  servaddr.sin_port = htons(PORT);
 
   while (i < 5) {
     clock_gettime(CLOCK_MONOTONIC, &start);
 
     // Send a message to the echo node
-    ssize_t bytes_sent =
-        sendto(sockfd, buffer, strlen(buffer), 0,
-               (const struct sockaddr *)&dest_addr, sizeof(dest_addr));
+    ssize_t bytes_sent = sendto(sockfd, buffer, BUFFER_SIZE, 0,
+                                (struct sockaddr *)&servaddr, servaddr_len);
     if (bytes_sent == -1) {
-      perror("sendto");
+      perror("sendto failed");
       exit(EXIT_FAILURE);
     }
     printf("Message sent to the echo node.\n");
 
     // Receive a message from the echo node
     ssize_t bytes_received =
-        recvfrom(sockfd, buffer, BUFFER_SIZE, 0, (struct sockaddr *)&dest_addr,
-                 &dest_addr_len);
+        recvfrom(sockfd, buffer, BUFFER_SIZE, 0,
+                 (struct sockaddr *)&servaddr, &servaddr_len);
     if (bytes_received == -1) {
-      perror("recvfrom");
+      perror("recvfrom failed");
       exit(EXIT_FAILURE);
     }
     printf("Message received from the echo node.\n");
