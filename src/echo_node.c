@@ -54,6 +54,8 @@ int main(void) {
       perror("recvfrom");
       exit(EXIT_FAILURE);
     }
+    printf("Message received from server.\n");
+
 
     // Send a message to the dest
     ssize_t bytes_sent =
@@ -63,6 +65,7 @@ int main(void) {
       perror("sendto");
       exit(EXIT_FAILURE);
     }
+    printf("Message sent to the server.\n");
   }
 
   // Close the socket
