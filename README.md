@@ -14,8 +14,7 @@ $ git clone https://github.com/MarklPlz/Round-Trip-Measurements.git
 $ cd Round-Trip-Measurements
 
 # Compile the source files
-$ gcc -Wall -Wextra -pedantic -O3 -std=c18 src/echo_node.c -o echo_node
-$ gcc -Wall -Wextra -pedantic -O3 -std=c18 src/measure_node.c -o measure_node -D_POSIX_C_SOURCE=199309L
+$ make
 
 # Run the program
 $ ./echo_node
