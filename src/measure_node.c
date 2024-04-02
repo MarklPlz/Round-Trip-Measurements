@@ -1,23 +1,26 @@
 #include <arpa/inet.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
 
-#define PORT 12345          // Port number to bind the socket
-#define DEST_IP "127.0.0.1" // IP address of the echo node server
-#define INTERVAL 1          // Send interval
-#define BUFFER_SIZE 1024    // Size of the buffer for sending/receiving data
+#define PORT 12345             // Port number to bind the socket
+#define DEST_IP "192.168.0.95" // IP address of the echo node server
+#define INTERVAL 10 * 1e-6     // Send interval
+#define PACKETS 1000            // 
+// #define BUFFER_SIZE 1024    // Size of the buffer for sending/receiving data
 
 int main(void) {
-  int i = 0;
   struct timespec start, end;
   double elapsed;
+  uint32_t measured_time[PACKETS];
 
   int sockfd;
   struct sockaddr_in servaddr;
   socklen_t servaddr_len = sizeof(servaddr);
-  char buffer[] = "Hello, UDP server!";
+  uint32_t buffer = 0;
+  uint16_t buffer_size = sizeof(buffer);
 
   // Create a UDP socket, SOCK_DGRAM for UDP
   if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
@@ -29,28 +32,35 @@ int main(void) {
   servaddr.sin_family = AF_INET;
   servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
   servaddr.sin_port = htons(PORT);
+  if (inet_pton(AF_INET, DEST_IP, &servaddr.sin_addr) <= 0) {
+    perror("inet_pton");
+    exit(EXIT_FAILURE);
+  }
 
-  while (i < 5) {
+  printf("Measure node is running.\n");
+
+  while (buffer < PACKETS) {
     clock_gettime(CLOCK_MONOTONIC, &start);
 
     // Send a message to the echo node
-    ssize_t bytes_sent = sendto(sockfd, buffer, BUFFER_SIZE, 0,
+    ssize_t bytes_sent = sendto(sockfd, &buffer, buffer_size, 0,
                                 (struct sockaddr *)&servaddr, servaddr_len);
     if (bytes_sent == -1) {
       perror("sendto failed");
       exit(EXIT_FAILURE);
     }
-    printf("Message sent to the echo node.\n");
 
     // Receive a message from the echo node
     ssize_t bytes_received =
-        recvfrom(sockfd, buffer, BUFFER_SIZE, 0,
-                 (struct sockaddr *)&servaddr, &servaddr_len);
+        recvfrom(sockfd, &buffer, buffer_size, 0, (struct sockaddr *)&servaddr,
+                 &servaddr_len);
     if (bytes_received == -1) {
       perror("recvfrom failed");
       exit(EXIT_FAILURE);
     }
-    printf("Message received from the echo node.\n");
+
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    measured_time[buffer] = (end.tv_nsec - start.tv_nsec);
 
     do {
       clock_gettime(CLOCK_MONOTONIC, &end);
@@ -59,9 +69,13 @@ int main(void) {
           (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
     } while (elapsed < INTERVAL);
 
-    printf("Elapsed time: %f seconds\n", elapsed);
+    buffer++;
+  }
 
-    i++;
+  // print measured times
+  for (int i = 0; i < PACKETS; i++) {
+    printf("%d ", measured_time[i]);
+    printf("\n");
   }
 
   // Close the socket
