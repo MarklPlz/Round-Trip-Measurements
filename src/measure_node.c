@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 #define PORT 12345             // Port number to bind the socket
-#define DEST_IP "192.168.0.95" // IP address of the echo node server
+#define DEST_IP "127.0.0.1" // IP address of the echo node server
 #define INTERVAL 10 * 1e-6     // Send interval
 #define PACKETS 1000            // 
 // #define BUFFER_SIZE 1024    // Size of the buffer for sending/receiving data
@@ -21,6 +21,13 @@ int main(void) {
   socklen_t servaddr_len = sizeof(servaddr);
   uint32_t buffer = 0;
   uint16_t buffer_size = sizeof(buffer);
+  
+  // Datei öffnen zum Schreiben
+  FILE *data = fopen("data.csv", "w");
+  if (data == NULL) {
+	printf("Fehler beim Öffnen der Datei.\n");
+    return 1;
+  }
 
   // Create a UDP socket, SOCK_DGRAM for UDP
   if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
@@ -71,12 +78,18 @@ int main(void) {
 
     buffer++;
   }
-
+  
+	// Daten in die Datei schreiben
+	fprintf(data, "Measured time [ns]\n"); 
+	for (int i = 0; i < PACKETS; ++i) {
+        fprintf(data, "%u\n", measured_time[i]); // Schreibe den Wert gefolgt von einem Zeilenumbruch
+    }
+    
   // print measured times
-  for (int i = 0; i < PACKETS; i++) {
+  /*for (int i = 0; i < PACKETS; i++) {
     printf("%d ", measured_time[i]);
     printf("\n");
-  }
+  }*/
 
   // Close the socket
   close(sockfd);
