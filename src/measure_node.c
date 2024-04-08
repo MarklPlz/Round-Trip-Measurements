@@ -79,11 +79,11 @@ int main(void) {
     buffer++;
   }
   
-	// Daten in die Datei schreiben
-	fprintf(data, "Measured time [ns]\n"); 
-	for (int i = 0; i < PACKETS; ++i) {
-        fprintf(data, "%u\n", measured_time[i]); // Schreibe den Wert gefolgt von einem Zeilenumbruch
-    }
+// Daten in die Datei schreiben
+fprintf(data, "Measured time [ns]\n"); 
+for (int i = 0; i < PACKETS; ++i) {
+	fprintf(data, "%u\n", measured_time[i]); // Schreibe den Wert gefolgt von einem Zeilenumbruch
+}
     
   // print measured times
   /*for (int i = 0; i < PACKETS; i++) {
