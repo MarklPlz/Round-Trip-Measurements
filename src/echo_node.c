@@ -4,7 +4,6 @@
 #include <unistd.h>
 
 #define PORT 12345       // Port number to bind the socket
-// #define BUFFER_SIZE 1024 // Size of the buffer for sending/receiving data
 
 int main(void) {
   int sockfd;
