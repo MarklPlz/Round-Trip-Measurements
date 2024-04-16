@@ -1,0 +1,25 @@
+# 500k
+Max Time: 3295167.35 µs.
+Min Time: 130.518 µs.
+Mean Time: 712.1301673600002 µs.
+
+# CPU
+Max Time: 3295128.425 µs.
+Min Time: 138.535 µs.
+Mean Time: 679.33578028 µs.
+
+# Network 1
+Max Time: 3295129.184 µs.
+Min Time: 126.018 µs.
+Mean Time: 613.82789368 µs.
+
+# Network 2
+Max Time: 3295131.406 µs.
+Min Time: 121.74 µs.
+Mean Time: 613.7861269199999 µs.
+
+# Normal
+Max Time: 3295157.572 µs.
+Min Time: 161.813 µs.
+Mean Time: 763.3329578 µs.
+

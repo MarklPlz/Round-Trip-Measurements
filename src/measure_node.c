@@ -5,10 +5,10 @@
 #include <time.h>
 #include <unistd.h>
 
-#define PORT 12345          // Port number to bind the socket
-#define DEST_IP "192.168.0.96" // IP address of the echo node server
-#define INTERVAL 200 * 1e-6  // Send interval
-#define PACKETS 50000        // Number of packets
+#define PORT 12345             // Port number to bind the socket
+#define DEST_IP "192.168.0.26" // IP address of the echo node server
+#define INTERVAL 10 * 1e-6     // Send interval
+#define PACKETS 50000          // Number of packets
 
 int main(void) {
   struct timespec start, end;
