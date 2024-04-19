@@ -6,27 +6,20 @@
 #include <unistd.h>
 
 #define PORT 12345             // Port number to bind the socket
-#define DEST_IP "192.168.0.26" // IP address of the echo node server
-#define INTERVAL 10 * 1e-6     // Send interval
+#define DEST_IP "192.168.0.96" // IP address of the echo node server
+#define INTERVAL 100 * 1e-6    // Send interval
 #define PACKETS 50000          // Number of packets
 
 int main(void) {
   struct timespec start, end;
   double elapsed;
-  uint32_t measured_time[PACKETS];
+  double measured_time[PACKETS];
 
   int sockfd;
   struct sockaddr_in servaddr;
   socklen_t servaddr_len = sizeof(servaddr);
   uint32_t buffer = 0;
   uint16_t buffer_size = sizeof(buffer);
-
-  // Open file for writing
-  FILE *data = fopen("./data/data.csv", "w");
-  if (data == NULL) {
-    printf("Fehler beim Öffnen der Datei.\n");
-    return 1;
-  }
 
   // Create a UDP socket, SOCK_DGRAM for UDP
   if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
@@ -66,14 +59,15 @@ int main(void) {
     }
 
     clock_gettime(CLOCK_MONOTONIC, &end);
-    measured_time[buffer] = (end.tv_nsec - start.tv_nsec);
+    elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+    measured_time[buffer] = elapsed * 1e6; // seconds to microseconds
 
-    do {
+    while (elapsed < INTERVAL) {
       clock_gettime(CLOCK_MONOTONIC, &end);
       // Calculate elapsed time
       elapsed =
           (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
-    } while (elapsed < INTERVAL);
+    }
 
     buffer++;
   }
@@ -81,18 +75,19 @@ int main(void) {
   // Close the socket
   close(sockfd);
 
-  // Write data to the file
-  fprintf(data, "Measured time [ns]\n");
-  for (int i = 0; i < PACKETS; ++i) {
-    fprintf(data, "%u\n",
-            measured_time[i]); // Write the value followed by a line break
+  // Open file for writing
+  FILE *data = fopen("./data/data.csv", "w");
+  if (data == NULL) {
+    printf("writing to file failed\n");
+    return 1;
   }
 
-  // print measured times
-  /*for (int i = 0; i < PACKETS; i++) {
-    printf("%d ", measured_time[i]);
-    printf("\n");
-  }*/
+  // Write data to the file
+  fprintf(data, "Measured time [us]\n");
+  for (int i = 0; i < PACKETS; ++i) {
+    fprintf(data, "%f\n",
+            measured_time[i]); // Write the value followed by a line break
+  }
 
   return 0;
 }
